@@ -164,37 +164,68 @@ def ecdf(x):
 
 
 # This isn't done yet
-def match_and_display_images(template, sources):
+def match_and_display_images(template_file, source_files):
+    template = img.imread(template_file)
+    sources = [img.imread(sf) for sf in source_files]
     sources = [np.asarray(source) for source in sources]
     np.asarray(template)
-    matches = [hist_match(source, template).astype(int) for source in sources]
+
+    # Change to use parameter
+    matches = [hist_match_all_hls(source, template).astype(int) for source in sources]
 
     fig = plt.figure()
-    gs = plt.GridSpec(2, 3)
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax2 = fig.add_subplot(gs[0, 1], sharex=ax1, sharey=ax1)
-    ax3 = fig.add_subplot(gs[0, 2], sharex=ax1, sharey=ax1)
-    ax4 = fig.add_subplot(gs[1, :])
-    for aa in (ax1, ax2, ax3):
-        aa.set_axis_off()
+    gs = plt.GridSpec(3, len(matches))
 
-    # make it work for lists
-    ax1.imshow(source, cmap=plt.cm.gray)
-    ax1.set_title('Source')
-    ax2.imshow(template, cmap=plt.cm.gray)
-    ax2.set_title('template')
-    ax3.imshow(matched, cmap=plt.cm.gray)
-    ax3.set_title('Matched')
+    ax1 = fig.add_subplot(gs[0, :])
+    ax1.imshow(template, cmap=plt.cm.gray)
+    ax1.set_title('Template')
+    ax1.set_axis_off()
 
-    # fixup, what to plot? maybe not at all
-    x1, y1 = ecdf(source2.ravel()[::3])
-    x2, y2 = ecdf(template2.ravel()[::3])
-    x3, y3 = ecdf(matched2.ravel()[::3])
-    ax4.plot(x1, y1 * 100, '-r', lw=3, label='Source')
-    ax4.plot(x2, y2 * 100, '-k', lw=3, label='Template')
-    ax4.plot(x3, y3 * 100, '--r', lw=3, label='Matched')
-    ax4.set_xlim(x1[0], x1[-1])
-    ax4.set_xlabel('Pixel value')
-    ax4.set_ylabel('Cumulative %')
-    ax4.legend(loc=5)
+    ax_source = fig.add_subplot(gs[1, 0])
+    ax_source.imshow(sources[0], cmap=plt.cm.gray)
+    ax_source.set_title('Source 1')
+    ax_source.set_axis_off()
+    ax_match = fig.add_subplot(gs[2,0])
+    ax_match.imshow(matches[0], cmap=plt.cm.gray)
+    ax_match.set_title('Matched 1')
+    ax_match.set_axis_off()
+    
+    for i in range(len(matches)):
+        if i == 0: continue
+        axs = fig.add_subplot(gs[1, i], sharex=ax_source, sharey=ax_source)
+        axs.imshow(sources[i], cmap=plt.cm.gray)
+        axs.set_title(f'Source {i+1}')
+        axs.set_axis_off()
+        axm = fig.add_subplot(gs[2, i], sharex=ax_match, sharey=ax_match)
+        axm.imshow(matches[i], cmap=plt.cm.gray)
+        axm.set_title(f'Matched {i+1}')
+        axm.set_axis_off()
+
+    plt.show()
+
+    # ax2 = fig.add_subplot(gs[0, 1], sharex=ax1, sharey=ax1)
+    # ax3 = fig.add_subplot(gs[0, 2], sharex=ax1, sharey=ax1)
+    # ax4 = fig.add_subplot(gs[1, :])
+    # for aa in (ax1, ax2, ax3):
+    #     aa.set_axis_off()
+
+    # # make it work for lists
+    # ax1.imshow(source, cmap=plt.cm.gray)
+    # ax1.set_title('Source')
+    # ax2.imshow(template, cmap=plt.cm.gray)
+    # ax2.set_title('template')
+    # ax3.imshow(matched, cmap=plt.cm.gray)
+    # ax3.set_title('Matched')
+
+    # # fixup, what to plot? maybe not at all
+    # x1, y1 = ecdf(source2.ravel()[::3])
+    # x2, y2 = ecdf(template2.ravel()[::3])
+    # x3, y3 = ecdf(matched2.ravel()[::3])
+    # ax4.plot(x1, y1 * 100, '-r', lw=3, label='Source')
+    # ax4.plot(x2, y2 * 100, '-k', lw=3, label='Template')
+    # ax4.plot(x3, y3 * 100, '--r', lw=3, label='Matched')
+    # ax4.set_xlim(x1[0], x1[-1])
+    # ax4.set_xlabel('Pixel value')
+    # ax4.set_ylabel('Cumulative %')
+    # ax4.legend(loc=5)
 
