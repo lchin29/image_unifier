@@ -54,7 +54,7 @@ def hist_match_all_hls(source, template):
 
     return rgb_image
 
-def hist_match_hls(source, template, hue=False, lightness=False, saturation=False):
+def hist_match_hls(source, template, hue=True, lightness=True, saturation=True):
     """
     Adjust the hue, lightness, or saturation values of an image such 
     that its histogram matches that of a target image
@@ -163,15 +163,13 @@ def ecdf(x):
     return vals, ecdf
 
 
-# This isn't done yet
-def match_and_display_images(template_file, source_files):
+def match_and_display_images(template_file, source_files, hue=True, lightness=True, saturation=True):
     template = img.imread(template_file)
     sources = [img.imread(sf) for sf in source_files]
     sources = [np.asarray(source) for source in sources]
     np.asarray(template)
 
-    # Change to use parameter
-    matches = [hist_match_all_hls(source, template).astype(int) for source in sources]
+    matches = [hist_match_hls(source, template, hue, lightness, saturation).astype(int) for source in sources]
 
     fig = plt.figure()
     gs = plt.GridSpec(3, len(matches))
@@ -202,30 +200,4 @@ def match_and_display_images(template_file, source_files):
         axm.set_axis_off()
 
     plt.show()
-
-    # ax2 = fig.add_subplot(gs[0, 1], sharex=ax1, sharey=ax1)
-    # ax3 = fig.add_subplot(gs[0, 2], sharex=ax1, sharey=ax1)
-    # ax4 = fig.add_subplot(gs[1, :])
-    # for aa in (ax1, ax2, ax3):
-    #     aa.set_axis_off()
-
-    # # make it work for lists
-    # ax1.imshow(source, cmap=plt.cm.gray)
-    # ax1.set_title('Source')
-    # ax2.imshow(template, cmap=plt.cm.gray)
-    # ax2.set_title('template')
-    # ax3.imshow(matched, cmap=plt.cm.gray)
-    # ax3.set_title('Matched')
-
-    # # fixup, what to plot? maybe not at all
-    # x1, y1 = ecdf(source2.ravel()[::3])
-    # x2, y2 = ecdf(template2.ravel()[::3])
-    # x3, y3 = ecdf(matched2.ravel()[::3])
-    # ax4.plot(x1, y1 * 100, '-r', lw=3, label='Source')
-    # ax4.plot(x2, y2 * 100, '-k', lw=3, label='Template')
-    # ax4.plot(x3, y3 * 100, '--r', lw=3, label='Matched')
-    # ax4.set_xlim(x1[0], x1[-1])
-    # ax4.set_xlabel('Pixel value')
-    # ax4.set_ylabel('Cumulative %')
-    # ax4.legend(loc=5)
 
