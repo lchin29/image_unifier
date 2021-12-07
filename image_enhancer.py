@@ -41,10 +41,10 @@ def hist_match_all_hls(image, template):
     t_quantiles /= t_quantiles[-1]
 
     # Use linear interpolation to match the pixel values in the template image
-    # that have similar normalized cumulative distribution as in the image to modify
+    # that have similar normalized cumulative distribution as in source image
     interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
     
-    # Reshape interpolated pixel locations to fit the image's original shape
+    # Reshape interpolated pixel locations to fit the source image's original shape
     new_shape = interp_t_values[s_unique_indices].reshape(old_shape) 
 
     # Transform image back into rgb values
@@ -61,7 +61,7 @@ def hist_match_hls(source, template, hue=True, lightness=True, saturation=True):
     And stackexchange https://stackoverflow.com/questions/32655686/histogram-matching-of-two-images-in-python-2-x for hist matching
 
     Input: 
-    image (np.ndarray) - image to modify
+    source (np.ndarray) - image to modify
     template (np.ndarray) - image to match the histogram of
     hue/lightness/saturation - Boolean indicating which property to modify
     
@@ -261,14 +261,16 @@ def graph_histogram(source, template, matched):
     plt.show()
 
 def match_and_display_images(template_file, source_files, hue=True, lightness=True, saturation=True):
-    # Add comments to this?
+    # Read in image
     template = img.imread(template_file)
     sources = [img.imread(sf) for sf in source_files]
     sources = [np.asarray(source) for source in sources]
     np.asarray(template)
 
+    # Match image
     matches = [hist_match_hls(source, template, hue, lightness, saturation).astype(int) for source in sources]
 
+    # Plot images
     fig = plt.figure()
     gs = plt.GridSpec(3, len(matches))
 
