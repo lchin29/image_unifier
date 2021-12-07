@@ -67,9 +67,9 @@ class HlsImageMatcher:
 
         # Default the new values to the source and update the new values to the matched 
         # distribution if the parameter to match by the property is passed in.
-        new_h = self.match_distribution(source_h, template_h) if hue else source_h
-        new_l = self.match_distribution(source_l, template_l) if lightness else source_l
-        new_s = self.match_distribution(source_s, template_s) if saturation else source_s
+        new_h = match_distribution(source_h, template_h) if hue else source_h
+        new_l = match_distribution(source_l, template_l) if lightness else source_l
+        new_s = match_distribution(source_s, template_s) if saturation else source_s
 
         # Create new list of values, by setting every third value too hue, lightness
         # then saturation, then reshaping to the initial source image shape
