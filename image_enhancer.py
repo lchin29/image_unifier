@@ -7,7 +7,7 @@ def hls_to_rgb(r, g, b):
     # Convert HLS (0-1 floating point) to RGB (0-1 floating point multiplied by 255)
     return [ color * 255 for color in list(cs.hls_to_rgb(r,g,b))]
 
-def hist_match_all_hls(image, template):
+def hist_match_all_hls(source, template):
     """
     Match all properties of an image by adjusting pixel values to match the histogram
     distribution of the template image
@@ -159,18 +159,30 @@ def ecdf(x):
     ecdf /= ecdf[-1]
     return vals, ecdf
 
-def graph_histogram(source, template, matched):
+def graph_histogram(source_file, template_file, hue=True, lightness=True, saturation=True):
     """ 
     Graph comparison of the HLS distributions of a source, template, and matched image
 
     Referenced from https://stackoverflow.com/questions/32655686/histogram-matching-of-two-images-in-python-2-x
 
-    Input: image arrays of RGB values
+    Input: image files
     
     Output: display plot
 
     """
     # Might want to break this up into functions so we don't get dinged on modularity
+    
+    # Read in images
+    template = img.imread(template_file)
+    source = img.imread(source_file)
+    rgb_template = template
+    np.asarray(template)
+    np.asarray(source)
+    rgb_source = source
+
+    # Match image
+    matched = hist_match_hls(source, template, hue, lightness, saturation).astype(int)
+    rgb_matched = np.asarray(matched)
 
     # For template and source, split hue saturation and lightness into their own
     # list by getting the first, second or third of every nested array.
@@ -194,21 +206,22 @@ def graph_histogram(source, template, matched):
     x2, y2 = ecdf(template.ravel())
     x3, y3 = ecdf(matched.ravel())
 
-    x1_h, y1_h = ecdf(source_h.ravel())
-    x2_h, y2_h = ecdf(template_h.ravel())
-    x3_h, y3_h = ecdf(matched_h.ravel())
+    x1_h, y1_h = ecdf(source_h)
+    x2_h, y2_h = ecdf(template_h)
+    x3_h, y3_h = ecdf(matched_h)
 
-    x1_l, y1_l = ecdf(source_l.ravel())
-    x2_l, y2_l = ecdf(template_l.ravel())
-    x3_l, y3_l = ecdf(matched_k.ravel())
+    x1_l, y1_l = ecdf(source_l)
+    x2_l, y2_l = ecdf(template_l)
+    x3_l, y3_l = ecdf(matched_l)
 
-    x1_s, y1_s = ecdf(source_s.ravel())
-    x2_S, y2_s = ecdf(template_s.ravel())
-    x3_s, y3_s = ecdf(matched_s.ravel())
+    x1_s, y1_s = ecdf(source_s)
+    x2_s, y2_s = ecdf(template_s)
+    x3_s, y3_s = ecdf(matched_s)
 
     # Plot as array
     fig = plt.figure()
     gs = plt.GridSpec(5, 3)
+    fig.subplots_adjust(hspace=.8)
     ax1 = fig.add_subplot(gs[0, 0])
     ax2 = fig.add_subplot(gs[0, 1], sharex=ax1, sharey=ax1)
     ax3 = fig.add_subplot(gs[0, 2], sharex=ax1, sharey=ax1)
@@ -219,44 +232,41 @@ def graph_histogram(source, template, matched):
     for aa in (ax1, ax2, ax3):
         aa.set_axis_off()
 
-    ax1.imshow(source, cmap=plt.cm.gray)
+    ax1.imshow(rgb_source, cmap=plt.cm.gray)
     ax1.set_title('Source')
-    ax2.imshow(template, cmap=plt.cm.gray)
-    ax2.set_title('template')
-    ax3.imshow(matched, cmap=plt.cm.gray)
+    ax2.imshow(rgb_template, cmap=plt.cm.gray)
+    ax2.set_title('Template')
+    ax3.imshow(rgb_matched, cmap=plt.cm.gray)
     ax3.set_title('Matched')
 
     ax4.plot(x1, y1 * 100, '-r', lw=3, label='Source')
     ax4.plot(x2, y2 * 100, '-k', lw=3, label='Template')
     ax4.plot(x3, y3 * 100, '--r', lw=3, label='Matched')
     ax4.set_xlim(x1[0], x1[-1])
+    ax4.set_xticklabels([])
     ax4.set_xlabel('Pixel value')
-    ax4.set_ylabel('Cumulative %')
     ax4.legend(loc=5)
 
-    ax5.plot(x1_h, y1_h * 100, '-r', lw=3, label='Source')
-    ax5.plot(x2_h, y2_h * 100, '-k', lw=3, label='Template')
-    ax5.plot(x3_h, y3_h * 100, '--r', lw=3, label='Matched')
+    ax5.plot(x1_h, y1_h * 100, '-r', lw=3)
+    ax5.plot(x2_h, y2_h * 100, '-k', lw=3)
+    ax5.plot(x3_h, y3_h * 100, '--r', lw=3)
+    ax5.set_xticklabels([])
     ax5.set_xlim(x1_h[0], x1_h[-1])
     ax5.set_xlabel('Hue value')
-    ax5.set_ylabel('Cumulative %')
-    ax5.legend(loc=5)
 
-    ax6.plot(x1_l, y1_l * 100, '-r', lw=3, label='Source')
-    ax6.plot(x2_l, y2_l * 100, '-k', lw=3, label='Template')
-    ax6.plot(x3_l, y3_l * 100, '--r', lw=3, label='Matched')
+    ax6.plot(x1_l, y1_l * 100, '-r', lw=3)
+    ax6.plot(x2_l, y2_l * 100, '-k', lw=3)
+    ax6.plot(x3_l, y3_l * 100, '--r', lw=3)
+    ax6.set_xticklabels([])
     ax6.set_xlim(x1_l[0], x1_l[-1])
     ax6.set_xlabel('Lightness value')
     ax6.set_ylabel('Cumulative %')
-    ax6.legend(loc=5)
 
-    ax7.plot(x1_s, y1_s * 100, '-r', lw=3, label='Source')
-    ax7.plot(x2_s, y2_s * 100, '-k', lw=3, label='Template')
-    ax7.plot(x3_s, y3_s * 100, '--r', lw=3, label='Matched')
+    ax7.plot(x1_s, y1_s * 100, '-r', lw=3)
+    ax7.plot(x2_s, y2_s * 100, '-k', lw=3)
+    ax7.plot(x3_s, y3_s * 100, '--r', lw=3)
     ax7.set_xlim(x1_s[0], x1_s[-1])
     ax7.set_xlabel('Saturation value')
-    ax7.set_ylabel('Cumulative %')
-    ax7.legend(loc=5)
 
     plt.show()
 
