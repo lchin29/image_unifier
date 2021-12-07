@@ -17,9 +17,10 @@ class HlsImagesMatcher:
 
         # Match image
         matches = [
-          HlsImageMatcher(self.template_file, sf).
-          hist_match_hls(hue, lightness, saturation).
-          astype(int) for sf in self.source_files]
+            HlsImageMatcher(self.template_file, sf).
+            hist_match_hls(hue, lightness, saturation).
+            astype(int) for sf in self.source_files
+        ]
 
         # Plot images
         fig = plt.figure()
